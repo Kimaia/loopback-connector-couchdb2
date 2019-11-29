@@ -456,8 +456,9 @@ describe('CouchDB2 constructor', function() {
       ds.settings.Driver = function(options) {
         result = options;
         var fakedb = {db: {}};
-        fakedb.db.get = function(opts, cb) {
-          cb();
+        fakedb.db.get = function(opts) {
+          // emulate work of nano >=7
+          return new Promise(resolve => resolve());
         };
         return fakedb;
       };
@@ -483,8 +484,9 @@ describe('CouchDB2 constructor', function() {
     ds.settings.Driver = function(options) {
       result = options;
       var fakedb = {db: {}};
-      fakedb.db.get = function(opts, cb) {
-        cb();
+      fakedb.db.get = function(opts) {
+        // emulate work of nano >=7
+        return new Promise(resolve => resolve());
       };
       return fakedb;
     };
@@ -503,8 +505,9 @@ describe('CouchDB2 constructor', function() {
     myConfig.Driver = function(options) {
       result = options;
       var fakedb = {db: {}};
-      fakedb.db.get = function(opts, cb) {
-        cb();
+      fakedb.db.get = function(opts) {
+        // emulate work of nano >=7
+        return new Promise(resolve => resolve());
       };
       return fakedb;
     };
