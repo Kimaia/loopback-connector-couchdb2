@@ -5,11 +5,11 @@
 
 'use strict';
 
-require('./init.js');
 var CouchDB = require('../lib/couchdb');
 var _ = require('lodash');
 var should = require('should');
 var testUtil = require('./lib/test-util');
+
 var url = require('url');
 var db, Product, CustomerSimple, SimpleEmployee;
 
@@ -456,8 +456,9 @@ describe('CouchDB2 constructor', function() {
       ds.settings.Driver = function(options) {
         result = options;
         var fakedb = {db: {}};
-        fakedb.db.get = function(opts, cb) {
-          cb();
+        fakedb.db.get = function(opts) {
+          // emulate work of nano >=7
+          return new Promise(resolve => resolve());
         };
         return fakedb;
       };
@@ -483,8 +484,9 @@ describe('CouchDB2 constructor', function() {
     ds.settings.Driver = function(options) {
       result = options;
       var fakedb = {db: {}};
-      fakedb.db.get = function(opts, cb) {
-        cb();
+      fakedb.db.get = function(opts) {
+        // emulate work of nano >=7
+        return new Promise(resolve => resolve());
       };
       return fakedb;
     };
@@ -503,8 +505,9 @@ describe('CouchDB2 constructor', function() {
     myConfig.Driver = function(options) {
       result = options;
       var fakedb = {db: {}};
-      fakedb.db.get = function(opts, cb) {
-        cb();
+      fakedb.db.get = function(opts) {
+        // emulate work of nano >=7
+        return new Promise(resolve => resolve());
       };
       return fakedb;
     };
@@ -535,14 +538,46 @@ describe('CouchDB2 constructor', function() {
       parsedUrl.path = '';
       myConfig.url = parsedUrl.format();
       myConfig.database = 'idontexist';
-      var ds = global.getDataSource(myConfig);
+      const ds = global.getDataSource(myConfig);
+
+      // commenting out the old way
       /*
         we should receive here 'create' event but juggler.DataSource has no such event - oops!
-       */
+
       ds.once('couchdb.connector.db_created', function(err) {
         should.equal(err, null);
-        done();
+
+        ds.disconnect();
+
+        const exists = global.getDataSource(myConfig);
+
+        exists.once('couchdb.connector.db_exists', function(err) {
+          should.equal(err, null);
+          done();
+        });
       });
+       */
+
+      const init = ds => {
+        return new Promise((resolve, reject) => {
+          ds.once('couchdb.connector.db_exists', () => {
+            resolve('exists');
+          });
+          ds.once('couchdb.connector.db_created', () => {
+            reject('created');
+          });
+        });
+      };
+
+      init(ds)
+        .then(() => done(new Error('should never resolve')))
+        .catch(e => {
+          e.should.equal('created');
+          const exists = global.getDataSource(myConfig);
+          init(exists)
+            .then(() => done())
+            .catch(() => done(new Error('should never reject')));
+        });
     });
   } else {
     it('should give 404 error for nonexistant db', function(done) {

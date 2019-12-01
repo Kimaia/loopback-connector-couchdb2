@@ -7,5 +7,12 @@
        "ignorePattern": "^\\s*var\\s.=\\s*(require\\s*\\()|(/)"
      }],
      "no-unused-expressions": "off"
+  },
+  "env": {
+    "node": true,
+    "es6": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 8,
   }
 }
