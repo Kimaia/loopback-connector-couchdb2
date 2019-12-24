@@ -531,7 +531,7 @@ describe('CouchDB2 constructor', function() {
       done();
     });
   });
-  if (global.config.databaseCreate === 'true' || global.config.databaseCreate === '1') {
+  if (global.config.databaseCreate === true) {
     it('should create nonexistant db on 404 error', function(done) {
       var myConfig = _.clone(global.config);
       var parsedUrl = url.parse(myConfig.url);

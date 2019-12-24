@@ -19,7 +19,7 @@ var config = {
   plugin: 'retry',
   retryAttempts: 10,
   retryTimeout: 50,
-  databaseCreate: process.env.COUCHDB_DATABASE_CREATE,
+  databaseCreate: process.env.COUCHDB_DATABASE_CREATE ? true : false
 };
 
 console.log('env config ', config);
